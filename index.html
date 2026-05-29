@@ -333,32 +333,7 @@ body {
 </div>
 
 <div class="section">
-<div class="section-header">
-    <h2>七、投放效率分析（点击量/投放金额）</h2>
-    <div class="section-note">点击量周期：5.1-5.26 | 投放金额周期：5.1-5.26</div>
-</div>
-<div class="chart-box" id="chart-efficiency" style="height:380px;"></div>
-<div style="height:16px;"></div>
-<div class="two-col">
-    <div class="insight-box success">
-        <div class="insight-title">效率领先</div>
-        <div class="insight-content">
-            <p><strong>金领冠 2.99 点击/元</strong>：投入产出效率排名第3，高于皇家（1.45）和合生元（1.33）。说明每元投放带来的点击量相对较好。</p>
-            <p><strong>飞鹤 3.92 点击/元</strong>：效率最高，体量最大且效率领先，投放策略最为成熟。</p>
-        </div>
-    </div>
-    <div class="insight-box danger">
-        <div class="insight-title">效率隐忧</div>
-        <div class="insight-content">
-            <p><strong>皇家美素佳儿 1.45 点击/元</strong>、<strong>合生元 1.33 点击/元</strong>：效率最低，但投放预算最高。说明其通过大量投放"买量"策略抢占市场。</p>
-            <p><strong>金领冠效率虽好但总量不足</strong>：若将投放提升至合生元水平（1,272万），按当前效率可带来约3,800万点击，足以反超竞对。</p>
-        </div>
-    </div>
-</div>
-</div>
-
-<div class="section">
-<div class="section-header"><h2>八、策略建议</h2></div>
+<div class="section-header"><h2>七、策略建议</h2></div>
 <div class="strategy-grid">
     <div class="strategy-card">
         <h4>巩固优势</h4>
@@ -529,11 +504,7 @@ window.addEventListener('resize', () => {
     structChart.resize(); adChart.resize(); pieChart.resize();
 });
 
-const efficiencyChart = echarts.init(document.getElementById('chart-efficiency'));
-efficiencyChart.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
-        formatter: function(params) {
-            const p = params[0];
+const p = params[0];
             return '<div style="font-weight:600">' + p.name + '</div>' +
                    '<div>效率: <strong>' + p.value + ' 点击/元</strong></div>';
         }
