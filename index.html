@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>金领冠官旗VS竞对官旗 渠道流量综合分析报告</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: linear-gradient(135deg, #eef2f7 0%, #e0e8f5 50%, #f0f4fa 100%);
+    color: #1e293b; line-height: 1.6; min-height: 100vh; padding: 20px;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+.header {
+    text-align: center; padding: 40px 30px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,248,255,0.9));
+    border-radius: 16px; margin-bottom: 24px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+}
+.header h1 {
+    font-size: 28px; font-weight: 700;
+    background: linear-gradient(90deg, #1e40af, #3b82f6, #6366f1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+.header .period { font-size: 14px; color: #64748b; }
+.section {
+    background: rgba(255,255,255,0.92); border-radius: 16px;
+    padding: 28px 32px; margin-bottom: 24px;
+    border: 1px solid rgba(59, 130, 246, 0.12);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 8px;
+}
+.section-header h2 { font-size: 20px; font-weight: 700; color: #1e40af; }
+.section-note { font-size: 13px; color: #64748b; }
+.summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+.summary-card {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: 12px; padding: 18px 14px; text-align: center;
+    border: 1px solid rgba(59,130,246,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.summary-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(59,130,246,0.12); }
+.summary-card.jlg { background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 1px solid rgba(59,130,246,0.3); }
+.summary-card.warn { background: linear-gradient(135deg, #fee2e2, #fecaca); border: 1px solid rgba(220,38,38,0.3); }
+.card-title { font-size: 12px; color: #475569; margin-bottom: 8px; }
+.card-value { font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
+.card-sub { font-size: 13px; color: #64748b; margin-top: 4px; }
+.card-growth { font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 12px; display: inline-block; }
+.card-growth.up { color: #dc2626; background: linear-gradient(135deg, #fee2e2, #fecaca); }
+.card-growth.down { color: #16a34a; background: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+.insight-box {
+    background: linear-gradient(135deg, rgba(254,249,195,0.4), rgba(254,243,199,0.3));
+    border-radius: 10px; padding: 16px 20px; border-left: 3px solid #f59e0b;
+}
+.insight-box.danger {
+    background: linear-gradient(135deg, rgba(254,226,226,0.4), rgba(254,202,202,0.3));
+    border-left: 3px solid #dc2626;
+}
+.insight-box.success {
+    background: linear-gradient(135deg, rgba(220,252,231,0.4), rgba(187,247,208,0.3));
+    border-left: 3px solid #16a34a;
+}
+.insight-title { font-size: 14px; font-weight: 700; color: #92400e; margin-bottom: 10px; }
+.insight-box.danger .insight-title { color: #991b1b; }
+.insight-box.success .insight-title { color: #166534; }
+.insight-content p { font-size: 13px; color: #713f12; line-height: 1.8; margin-bottom: 6px; }
+.insight-box.danger .insight-content p { color: #7f1d1d; }
+.insight-box.success .insight-content p { color: #14532d; }
+.chart-box { height: 420px; background: #f8fafc; border-radius: 10px; padding: 10px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: #ffffff; padding: 10px 8px; text-align: center;
+    font-weight: 600; border: 1px solid rgba(59,130,246,0.2); white-space: nowrap;
+}
+.data-table th.jlg-header { background: linear-gradient(135deg, #1d4ed8, #2563eb); }
+.data-table td { padding: 8px 8px; border: 1px solid rgba(59,130,246,0.08); color: #334155; text-align: center; vertical-align: middle; }
+.data-table tr:nth-child(even) td { background: rgba(59,130,246,0.02); }
+.data-table tr:hover td { background: rgba(59,130,246,0.04); }
+.data-table tr.total-row td { font-weight: 600; color: #1e293b; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-top: 2px solid #3b82f6; border-bottom: 2px solid #3b82f6; }
+.data-table tr.subtotal-row td { font-weight: 600; background: #f8fafc; border-top: 1px dashed #cbd5e1; }
+.data-table td.num-cell { text-align: right; font-variant-numeric: tabular-nums; min-width: 90px; }
+.data-table td.pct-cell { text-align: center; font-weight: 600; }
+.data-table td.label-cell { text-align: left; font-weight: 600; }
+.data-table td.jlg-cell { background: rgba(219,234,254,0.25); font-weight: 500; }
+.data-table td.highlight-red { color: #dc2626; font-weight: 700; }
+.data-table td.highlight-green { color: #16a34a; font-weight: 700; }
+.data-table td.highlight-orange { color: #ea580c; font-weight: 700; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.strategy-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.strategy-card { background: #f8fafc; border-radius: 10px; padding: 16px; border: 1px solid rgba(59,130,246,0.1); }
+.strategy-card h4 { font-size: 14px; font-weight: 700; color: #1e40af; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(59,130,246,0.15); }
+.strategy-card ul { padding-left: 18px; }
+.strategy-card li { font-size: 13px; color: #334155; line-height: 1.8; margin-bottom: 4px; }
+@media (max-width: 960px) { .two-col { grid-template-columns: 1fr; } .summary-cards { grid-template-columns: repeat(2, 1fr); } .strategy-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .summary-cards { grid-template-columns: 1fr; } }
+@media print { body { padding: 0; background: #fff; } .section { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>金领冠官旗 VS 竞对官旗 渠道流量综合分析报告</h1>
+    <div class="period">
+        点击量周期：2026-05-01~05-26 vs 2026-04-01~04-26 <span style="color:#cbd5e1">|</span>
+        投放金额周期：2026-05-01~05-26 &amp; 2026-05-01~05-18
+    </div>
+</div>
+
+<div class="section">
+<div class="section-header">
+    <div><h2>一、总量格局：金领冠唯一负增长</h2><div class="section-note">点击量数据来源：DMP竞争店铺分析 | 竞对取区间中位值</div></div>
+</div>
+<div class="summary-cards">
+    <div class="summary-card warn">
+        <div class="card-title">金领冠总点击量</div>
+        <div class="card-value">14,894,152</div>
+        <div class="card-growth down">-11.0%</div>
+        <div class="card-sub">排名第3 <span style="color:#dc2626">唯一下滑</span></div>
+    </div>
+    <div class="summary-card">
+        <div class="card-title">飞鹤总点击量</div>
+        <div class="card-value">24,455,000</div>
+        <div class="card-growth up">+17.0%</div>
+        <div class="card-sub">排名第1 体量最大</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-title">合生元总点击量</div>
+        <div class="card-value">16,969,500</div>
+        <div class="card-growth up">+110.1%</div>
+        <div class="card-sub">排名第2 增速翻倍</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-title">皇家美素佳儿</div>
+        <div class="card-value">14,785,000</div>
+        <div class="card-growth up">+47.6%</div>
+        <div class="card-sub">排名第4 紧追金领冠</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-title">爱他美总点击量</div>
+        <div class="card-value">4,885,040</div>
+        <div class="card-growth up">+27.0%</div>
+        <div class="card-sub">排名第5 体量最小</div>
+    </div>
+</div>
+<div class="insight-box danger">
+    <div class="insight-title">核心预警</div>
+    <div class="insight-content">
+        <p><strong>金领冠是五品牌中唯一点击量环比负增长的品牌（-11%）</strong>。竞对全部正增长，合生元增速高达+110%，皇家美素佳儿+48%已逼近金领冠体量。</p>
+        <p><strong>总量排名面临被超越风险：</strong>金领冠1,489万 vs 皇家美素佳儿1,479万，差距仅<strong style="color:#dc2626">109万</strong>（0.7%）。若当前趋势延续，皇家美素佳儿有望在6月超越金领冠。</p>
+    </div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-header"><h2>二、金领冠一级渠道结构</h2><div class="section-note">分析周期：2026-05-01~05-26</div></div>
+<div class="chart-box" id="chart-structure"></div>
+</div>
+
+<div class="two-col">
+<div class="section">
+<div class="section-header"><h2>三、增长亮点（正增长渠道）</h2></div>
+<div class="insight-box success">
+    <div class="insight-title">淘宝私域：+68%，增量约122万</div>
+    <div class="insight-content">
+        <p>点击量<strong>3,010,230</strong>，成为金领冠<strong>第一大渠道</strong>（占比20.2%）。核心驱动：淘外网站+138%（171万），购物车+35%，直接访问+435%。</p>
+    </div>
+</div>
+<div style="height:12px"></div>
+<div class="insight-box">
+    <div class="insight-title">全站推广：+24%，稳健增长</div>
+    <div class="insight-content">
+        <p>点击量1,231,298（占比8.3%）。货品全站推广持续投放，增速虽低于合生元（+254%）和皇家（+224%），但保持正向。</p>
+    </div>
+</div>
+<div style="height:12px"></div>
+<div class="insight-box">
+    <div class="insight-title">品销宝 / 淘宝推荐 / 淘宝搜索：稳中有升</div>
+    <div class="insight-content">
+        <p>品销宝433,370（+18%）持续拦截品牌词；淘宝推荐628,432（+18%）；淘宝搜索746,408（+9%）基本盘稳定。</p>
+    </div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-header"><h2>四、大幅下滑渠道（需紧急关注）</h2></div>
+<div class="insight-box danger">
+    <div class="insight-title">流量宝：-81%，断崖式下跌</div>
+    <div class="insight-content">
+        <p>点击量仅321,809（上期约169万）。该渠道几乎"归零"，需排查是否预算削减、政策变化或账号异常。</p>
+    </div>
+</div>
+<div style="height:12px"></div>
+<div class="insight-box danger">
+    <div class="insight-title">淘宝直播：-39%， dropped 154万点击</div>
+    <div class="insight-content">
+        <p>点击量2,426,724（上期约398万）。<strong>竞对全部翻倍增长</strong>：飞鹤+103%、合生元+183%、爱他美+519%、皇家+211%。金领冠直播策略已严重落后。</p>
+    </div>
+</div>
+<div style="height:12px"></div>
+<div class="insight-box danger">
+    <div class="insight-title">超级全域通：-45%，独家渠道萎缩</div>
+    <div class="insight-content">
+        <p>点击量1,032,627（上期约188万）。竞对均未布局此渠道，但金领冠自身投放大幅收缩，独家优势未能转化为增量。</p>
+    </div>
+</div>
+<div style="height:12px"></div>
+<div class="insight-box">
+    <div class="insight-title">品牌特秀（-37%）、内容营销（-27%）、淘宝客（-24%）</div>
+    <div class="insight-content">
+        <p>内容营销中超级直播-33%、超级短视频-16%，短直联动仅9,992点击。淘宝客 dropped 8万点击。</p>
+    </div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-header"><h2>五、竞争差距矩阵（金领冠 vs 竞对）</h2></div>
+<div style="overflow-x:auto">
+<table class="data-table">
+<thead><tr>
+    <th>渠道</th><th class="jlg-header">金领冠</th><th class="jlg-header">环比</th><th class="jlg-header">排名</th>
+    <th>竞对Top1</th><th>数值</th><th>倍数差距</th>
+</tr></thead>
+<tbody>
+<tr><td class="label-cell">淘宝直播</td><td class="num-cell jlg-cell">2,426,724</td><td class="pct-cell highlight-green">-39%</td><td class="pct-cell">3</td><td class="label-cell">飞鹤</td><td class="num-cell">8,250,000</td><td class="pct-cell highlight-red">3.4x</td></tr>
+<tr><td class="label-cell">淘宝其他</td><td class="num-cell jlg-cell">2,208,905</td><td class="pct-cell highlight-red">+14%</td><td class="pct-cell">4</td><td class="label-cell">飞鹤</td><td class="num-cell">6,750,000</td><td class="pct-cell highlight-red">3.1x</td></tr>
+<tr><td class="label-cell">全站推广</td><td class="num-cell jlg-cell">1,231,298</td><td class="pct-cell highlight-red">+24%</td><td class="pct-cell">4</td><td class="label-cell">合生元</td><td class="num-cell">2,650,000</td><td class="pct-cell highlight-red">2.2x</td></tr>
+<tr><td class="label-cell">淘宝推荐</td><td class="num-cell jlg-cell">628,432</td><td class="pct-cell highlight-red">+18%</td><td class="pct-cell">4</td><td class="label-cell">皇家</td><td class="num-cell">1,550,000</td><td class="pct-cell highlight-red">2.5x</td></tr>
+<tr><td class="label-cell">人群推广</td><td class="num-cell jlg-cell">1,406,357</td><td class="pct-cell highlight-red">+15%</td><td class="pct-cell">3</td><td class="label-cell">飞鹤</td><td class="num-cell">2,250,000</td><td class="pct-cell highlight-red">1.6x</td></tr>
+<tr><td class="label-cell">关键词推广</td><td class="num-cell jlg-cell">565,196</td><td class="pct-cell highlight-green">-9%</td><td class="pct-cell">3</td><td class="label-cell">皇家</td><td class="num-cell">1,150,000</td><td class="pct-cell highlight-red">2.0x</td></tr>
+<tr style="background:#fef3c7;"><td class="label-cell"><strong>品销宝</strong></td><td class="num-cell jlg-cell"><strong>433,370</strong></td><td class="pct-cell highlight-red"><strong>+18%</strong></td><td class="pct-cell"><strong>1</strong></td><td class="label-cell">飞鹤</td><td class="num-cell">325,000</td><td class="pct-cell highlight-green"><strong>领先1.3x</strong></td></tr>
+<tr style="background:#fef3c7;"><td class="label-cell"><strong>超级全域通</strong></td><td class="num-cell jlg-cell"><strong>1,032,627</strong></td><td class="pct-cell highlight-green"><strong>-45%</strong></td><td class="pct-cell"><strong>独家</strong></td><td class="label-cell">--</td><td class="num-cell">--</td><td class="pct-cell"><strong>独享</strong></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+<div class="section">
+<div class="section-header">
+    <h2>六、投放金额分析</h2>
+    <div class="section-note">数据周期：2026年5月1日-26日 | 来源：各品牌投放后台</div>
+</div>
+<div class="two-col">
+    <div class="chart-box" id="chart-adspend" style="height:360px;"></div>
+    <div class="chart-box" id="chart-jlg-pie" style="height:360px;"></div>
+</div>
+<div style="height:16px;"></div>
+<div style="overflow-x:auto">
+<table class="data-table">
+<thead><tr>
+    <th>场景</th><th class="jlg-header">金领冠</th><th class="jlg-header">占比</th>
+    <th>飞鹤</th><th>占比</th><th>爱他美</th><th>占比</th><th>皇家美素佳儿</th><th>占比</th><th>合生元</th><th>占比</th>
+</tr></thead>
+<tbody>
+<tr class="total-row"><td class="label-cell"><strong>汇总</strong></td>
+    <td class="num-cell jlg-cell"><strong>4,980,865</strong></td><td class="pct-cell jlg-cell"><strong>100%</strong></td>
+    <td class="num-cell"><strong>6,235,674</strong></td><td class="pct-cell"><strong>100%</strong></td>
+    <td class="num-cell"><strong>1,596,153</strong></td><td class="pct-cell"><strong>100%</strong></td>
+    <td class="num-cell"><strong>10,223,563</strong></td><td class="pct-cell"><strong>100%</strong></td>
+    <td class="num-cell"><strong>12,724,836</strong></td><td class="pct-cell"><strong>100%</strong></td>
+</tr>
+<tr><td class="label-cell">关键词推广</td>
+    <td class="num-cell jlg-cell">1,542,600</td><td class="pct-cell">31%</td>
+    <td class="num-cell">1,803,829</td><td class="pct-cell">29%</td>
+    <td class="num-cell">744,368</td><td class="pct-cell">47%</td>
+    <td class="num-cell">3,364,250</td><td class="pct-cell">21%</td>
+    <td class="num-cell">3,817,728</td><td class="pct-cell">30%</td>
+</tr>
+<tr><td class="label-cell">人群推广</td>
+    <td class="num-cell jlg-cell">1,584,948</td><td class="pct-cell">32%</td>
+    <td class="num-cell">1,628,269</td><td class="pct-cell">26%</td>
+    <td class="num-cell">349,838</td><td class="pct-cell">10%</td>
+    <td class="num-cell">3,413,190</td><td class="pct-cell">24%</td>
+    <td class="num-cell">3,799,772</td><td class="pct-cell">30%</td>
+</tr>
+<tr><td class="label-cell">全站推广</td>
+    <td class="num-cell jlg-cell">1,402,756</td><td class="pct-cell">28%</td>
+    <td class="num-cell">2,262,452</td><td class="pct-cell">36%</td>
+    <td class="num-cell">369,579</td><td class="pct-cell">29%</td>
+    <td class="num-cell">3,180,832</td><td class="pct-cell">46%</td>
+    <td class="num-cell">3,982,148</td><td class="pct-cell">31%</td>
+</tr>
+<tr><td class="label-cell">超级直播</td>
+    <td class="num-cell jlg-cell">396,817</td><td class="pct-cell">8%</td>
+    <td class="num-cell">541,125</td><td class="pct-cell">9%</td>
+    <td class="num-cell">132,368</td><td class="pct-cell">10%</td>
+    <td class="num-cell">188,819</td><td class="pct-cell">6%</td>
+    <td class="num-cell">533,666</td><td class="pct-cell">4%</td>
+</tr>
+<tr><td class="label-cell">超级短视频</td>
+    <td class="num-cell jlg-cell">43,827</td><td class="pct-cell">1%</td>
+    <td class="num-cell">0</td><td class="pct-cell">0%</td>
+    <td class="num-cell">0</td><td class="pct-cell">0%</td>
+    <td class="num-cell">21,120</td><td class="pct-cell">0%</td>
+    <td class="num-cell">591,522</td><td class="pct-cell">5%</td>
+</tr>
+<tr><td class="label-cell">短直联动</td>
+    <td class="num-cell jlg-cell">7,317</td><td class="pct-cell">0%</td>
+    <td class="num-cell">0</td><td class="pct-cell">0%</td>
+    <td class="num-cell">0</td><td class="pct-cell">0%</td>
+    <td class="num-cell">55,354</td><td class="pct-cell">3%</td>
+    <td class="num-cell">0</td><td class="pct-cell">0%</td>
+</tr>
+<tr class="subtotal-row"><td class="label-cell">占去年5月全月</td>
+    <td class="num-cell jlg-cell">81%</td><td class="pct-cell">-</td>
+    <td class="num-cell">106%</td><td class="pct-cell">-</td>
+    <td class="num-cell">71%</td><td class="pct-cell">-</td>
+    <td class="num-cell">82%</td><td class="pct-cell">-</td>
+    <td class="num-cell">-</td><td class="pct-cell">-</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div style="height:12px;"></div>
+<div class="insight-box">
+    <div class="insight-title">投放洞察</div>
+    <div class="insight-content">
+        <p><strong>金领冠总投放498万</strong>，仅为合生元的39%、皇家美素佳儿的49%。预算偏低是流量落后的核心原因之一。</p>
+        <p><strong>内容营销占比极低</strong>：超级直播+短视频+短直联动合计仅448万（9%），合生元内容营销占比达9%（含短视频591万）。直播内容投入严重不足。</p>
+        <p><strong>占去年5月仅81%</strong>：投放节奏偏保守，飞鹤已达106%。月底前有预算提升空间。</p>
+    </div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-header">
+    <h2>七、投放效率分析（点击量/投放金额）</h2>
+    <div class="section-note">点击量周期：5.1-5.26 | 投放金额周期：5.1-5.26</div>
+</div>
+<div class="chart-box" id="chart-efficiency" style="height:380px;"></div>
+<div style="height:16px;"></div>
+<div class="two-col">
+    <div class="insight-box success">
+        <div class="insight-title">效率领先</div>
+        <div class="insight-content">
+            <p><strong>金领冠 2.99 点击/元</strong>：投入产出效率排名第3，高于皇家（1.45）和合生元（1.33）。说明每元投放带来的点击量相对较好。</p>
+            <p><strong>飞鹤 3.92 点击/元</strong>：效率最高，体量最大且效率领先，投放策略最为成熟。</p>
+        </div>
+    </div>
+    <div class="insight-box danger">
+        <div class="insight-title">效率隐忧</div>
+        <div class="insight-content">
+            <p><strong>皇家美素佳儿 1.45 点击/元</strong>、<strong>合生元 1.33 点击/元</strong>：效率最低，但投放预算最高。说明其通过大量投放"买量"策略抢占市场。</p>
+            <p><strong>金领冠效率虽好但总量不足</strong>：若将投放提升至合生元水平（1,272万），按当前效率可带来约3,800万点击，足以反超竞对。</p>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-header"><h2>八、策略建议</h2></div>
+<div class="strategy-grid">
+    <div class="strategy-card">
+        <h4>巩固优势</h4>
+        <ul>
+            <li><strong>品销宝</strong>：品牌专区持续领先，拦截品牌词流量</li>
+            <li><strong>超级全域通</strong>：竞对均未布局，独家渠道需评估恢复投放</li>
+            <li><strong>淘宝私域</strong>：淘外网站+138%爆发，加大站外引流投入</li>
+            <li><strong>淘宝搜索</strong>：基本盘稳定，优化关键词ROI</li>
+        </ul>
+    </div>
+    <div class="strategy-card">
+        <h4>追赶差距</h4>
+        <ul>
+            <li><strong>淘宝直播：最紧急！</strong>当前242万 vs 飞鹤825万，差距3.4倍。需加大达人合作+店播频次，投放超级直播预算（当前仅39.7万，8%）</li>
+            <li><strong>淘宝其他</strong>：逛逛189,917（-1%）被飞鹤260万碾压，需恢复内容场域投入</li>
+            <li><strong>全站推广</strong>：竞对增速200%+，需加大货品推广预算</li>
+        </ul>
+    </div>
+    <div class="strategy-card">
+        <h4>止血止损</h4>
+        <ul>
+            <li><strong>流量宝（-81%）</strong>：排查预算或政策原因，制定恢复计划</li>
+            <li><strong>品牌特秀（-37%）</strong>：评估该渠道ROI，决定是否保留</li>
+            <li><strong>内容营销</strong>：超级直播-33%、超级短视频-16%，短直联动几乎为零，内容投放策略需全面复盘</li>
+            <li><strong>淘宝客（-24%）</strong>：关注竞对+87%增速，调整佣金策略</li>
+        </ul>
+    </div>
+    <div class="strategy-card">
+        <h4>投放策略</h4>
+        <ul>
+            <li><strong>总预算偏低</strong>：金领冠498万仅为合生元的39%、皇家的49%。若要保持竞争力，需提升投放预算</li>
+            <li><strong>结构优化</strong>：内容营销（直播+短视频+短直联动）合计仅448万（9%），远低于行业水平。建议向直播和内容倾斜</li>
+            <li><strong>占去年5月仅81%</strong>：投放节奏偏保守，飞鹤已达106%。月底前有提升空间</li>
+        </ul>
+    </div>
+</div>
+</div>
+
+
+
+<div style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">
+    数据来源：DMP竞争店铺分析 / 各品牌投放后台 | 报告生成时间：2026/05/29
+</div>
+
+
+
+</div>
+
+<script>
+const structChart = echarts.init(document.getElementById('chart-structure'));
+structChart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: function(params) {
+            let html = '<div style="font-weight:600;margin-bottom:4px;">' + params[0].axisValue + '</div>';
+            params.forEach(p => {
+                if (p.value > 0.5) {
+                    html += '<div style="display:flex;align-items:center;gap:6px;margin:2px 0;">' +
+                        '<span style="width:8px;height:8px;border-radius:50%;background:' + p.color + ';"></span>' +
+                        '<span style="flex:1;">' + p.seriesName + '</span>' +
+                        '<span style="font-weight:600;">' + p.value.toFixed(1) + '%</span></div>';
+                }
+            });
+            return html;
+        }
+    },
+    legend: { type: 'scroll', orient: 'horizontal', bottom: 0, left: 'center',
+        textStyle: { fontSize: 11, color: '#475569' }, itemWidth: 12, itemHeight: 12, itemGap: 12 },
+    grid: { left: '3%', right: '4%', bottom: '18%', top: '5%', containLabel: true },
+    xAxis: { type: 'category', data: ['金领冠','飞鹤','合生元','爱他美','皇家美素佳儿'],
+        axisLabel: { fontSize: 12, color: '#475569', fontWeight: 600 },
+        axisLine: { lineStyle: { color: '#cbd5e1' } }, axisTick: { show: false } },
+    yAxis: { type: 'value', max: 100,
+        axisLabel: { formatter: '{value}%', color: '#64748b', fontSize: 11 },
+        splitLine: { lineStyle: { color: '#f1f5f9' } }, axisLine: { show: false }, axisTick: { show: false } },
+    series: [
+        {name:'淘宝私域',type:'bar',stack:'total',data:[20.2,6.3,6.8,13.8,8.5],itemStyle:{color:'#3b82f6'}},
+        {name:'淘宝直播',type:'bar',stack:'total',data:[16.3,33.7,25.6,14.8,7.1],itemStyle:{color:'#60a5fa'}},
+        {name:'淘宝其他',type:'bar',stack:'total',data:[14.8,27.6,20.3,21.5,35.5],itemStyle:{color:'#93c5fd'}},
+        {name:'人群推广',type:'bar',stack:'total',data:[9.4,9.2,10.3,7.7,7.1],itemStyle:{color:'#1d4ed8'}},
+        {name:'全站推广',type:'bar',stack:'total',data:[8.3,5.5,15.6,5.6,9.8],itemStyle:{color:'#2563eb'}},
+        {name:'超级全域通',type:'bar',stack:'total',data:[6.9,0,0,0,0],itemStyle:{color:'#1e40af'}},
+        {name:'淘宝搜索',type:'bar',stack:'total',data:[5.0,3.6,3.7,6.7,3.2],itemStyle:{color:'#6366f1'}},
+        {name:'淘宝推荐',type:'bar',stack:'total',data:[4.2,5.9,4.9,7.7,10.5],itemStyle:{color:'#8b5cf6'}},
+        {name:'关键词推广',type:'bar',stack:'total',data:[3.8,1.7,5.2,3.6,7.8],itemStyle:{color:'#a78bfa'}},
+        {name:'品销宝',type:'bar',stack:'total',data:[2.9,1.3,1.9,3.6,1.9],itemStyle:{color:'#f59e0b'}},
+        {name:'流量宝',type:'bar',stack:'total',data:[2.2,1.1,0.03,12.8,0.8],itemStyle:{color:'#fbbf24'}},
+        {name:'内容营销',type:'bar',stack:'total',data:[1.8,1.3,4.3,1.1,1.5],itemStyle:{color:'#10b981'}},
+        {name:'淘宝客',type:'bar',stack:'total',data:[1.8,2.4,1.3,1.1,1.5],itemStyle:{color:'#34d399'}},
+        {name:'品牌特秀',type:'bar',stack:'total',data:[1.5,0.2,0.1,0,0.2],itemStyle:{color:'#64748b'}},
+        {name:'其他',type:'bar',stack:'total',data:[0.9,0,0,0,4.6],itemStyle:{color:'#cbd5e1'}},
+    ].map(s => ({...s, barWidth: '45%', label: {show: true, position: 'inside',
+        formatter: p => p.value >= 3 ? p.value.toFixed(1) + '%' : '', fontSize: 10, fontWeight: 600,
+        color: '#fff', textShadowColor: 'rgba(0,0,0,0.3)', textShadowBlur: 2}}))
+});
+
+const adChart = echarts.init(document.getElementById('chart-adspend'));
+adChart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: '3%', right: '8%', bottom: '5%', top: '10%', containLabel: true },
+    xAxis: { type: 'category', data: ['金领冠','飞鹤','爱他美','皇家美素佳儿','合生元'],
+        axisLabel: { fontSize: 12, color: '#475569' }, axisLine: { lineStyle: { color: '#cbd5e1' } } },
+    yAxis: { type: 'value', axisLabel: { color: '#64748b', fontSize: 11, formatter: v => (v/10000).toFixed(0) + '万' },
+        splitLine: { lineStyle: { color: '#f1f5f9' } } },
+    series: [{
+        type: 'bar', data: [
+            {value:4980865,itemStyle:{color:'#3b82f6'}},
+            {value:6235674,itemStyle:{color:'#60a5fa'}},
+            {value:1596153,itemStyle:{color:'#93c5fd'}},
+            {value:10223563,itemStyle:{color:'#f59e0b'}},
+            {value:12724836,itemStyle:{color:'#dc2626'}}
+        ], barWidth: '50%',
+        label: { show: true, position: 'top', formatter: p => (p.value/10000).toFixed(1) + '万',
+            fontSize: 12, fontWeight: 600, color: '#1e293b' }
+    }]
+});
+
+const pieChart = echarts.init(document.getElementById('chart-jlg-pie'));
+pieChart.setOption({
+    tooltip: { trigger: 'item', formatter: '{b}: {c}元 ({d}%)' },
+    legend: { orient: 'vertical', left: 'left', top: 'center', textStyle: { fontSize: 11, color: '#475569' } },
+    series: [{
+        type: 'pie', radius: ['40%', '70%'], center: ['60%', '50%'],
+        avoidLabelOverlap: true, itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+        label: { show: true, formatter: '{b}\n{d}%', fontSize: 11, color: '#475569' },
+        data: [
+            {value:1584948,name:'人群推广',itemStyle:{color:'#3b82f6'}},
+            {value:1542600,name:'关键词推广',itemStyle:{color:'#60a5fa'}},
+            {value:1402756,name:'全站推广',itemStyle:{color:'#93c5fd'}},
+            {value:396817,name:'超级直播',itemStyle:{color:'#f59e0b'}},
+            {value:43827,name:'超级短视频',itemStyle:{color:'#fbbf24'}},
+            {value:7317,name:'短直联动',itemStyle:{color:'#cbd5e1'}},
+        ]
+    }]
+});
+
+
+
+function toggleRows(icon) {
+    const row = icon.closest('tr');
+    const parent = row.getAttribute('data-parent');
+    const childRows = document.querySelectorAll('tr[data-child-of="' + parent + '"]');
+    const isExpanded = icon.textContent === '−';
+    icon.textContent = isExpanded ? '+' : '−';
+    childRows.forEach(r => {
+        r.style.display = isExpanded ? 'none' : 'table-row';
+    });
+}
+
+function expandAll() {
+    document.querySelectorAll('.toggle-icon').forEach(icon => {
+        icon.textContent = '−';
+    });
+    document.querySelectorAll('.child-row').forEach(r => {
+        r.style.display = 'table-row';
+    });
+}
+
+function collapseAll() {
+    document.querySelectorAll('.toggle-icon').forEach(icon => {
+        icon.textContent = '+';
+    });
+    document.querySelectorAll('.child-row').forEach(r => {
+        r.style.display = 'none';
+    });
+}
+
+window.addEventListener('resize', () => {
+    structChart.resize(); adChart.resize(); pieChart.resize();
+});
+
+const efficiencyChart = echarts.init(document.getElementById('chart-efficiency'));
+efficiencyChart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: function(params) {
+            const p = params[0];
+            return '<div style="font-weight:600">' + p.name + '</div>' +
+                   '<div>效率: <strong>' + p.value + ' 点击/元</strong></div>';
+        }
+    },
+    grid: { left: '3%', right: '4%', bottom: '5%', top: '10%', containLabel: true },
+    xAxis: { type: 'category', data: ['金领冠','飞鹤','爱他美','皇家美素佳儿','合生元'],
+        axisLabel: { fontSize: 12, color: '#475569', fontWeight: 600 },
+        axisLine: { lineStyle: { color: '#cbd5e1' } }, axisTick: { show: false } },
+    yAxis: { type: 'value', name: '点击/元', nameTextStyle: { color: '#64748b', fontSize: 11 },
+        axisLabel: { color: '#64748b', fontSize: 11 },
+        splitLine: { lineStyle: { color: '#f1f5f9' } }, axisLine: { show: false }, axisTick: { show: false } },
+    series: [{
+        type: 'bar', data: [
+            {value:2.99,itemStyle:{color:'#3b82f6'}},
+            {value:3.92,itemStyle:{color:'#60a5fa'}},
+            {value:3.06,itemStyle:{color:'#93c5fd'}},
+            {value:1.45,itemStyle:{color:'#f59e0b'}},
+            {value:1.33,itemStyle:{color:'#dc2626'}}
+        ], barWidth: '50%',
+        label: { show: true, position: 'top', formatter: p => p.value + ' 点击/元',
+            fontSize: 12, fontWeight: 600, color: '#1e293b' }
+    }]
+});
+</script>
+</body>
+</html>
